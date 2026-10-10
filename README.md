@@ -424,12 +424,65 @@ Open Telegram, find your bot, and send `/start`. JARVIS should reply.
 | Command | Description |
 |---|---|
 | `/help` | Show all commands |
-| `/status` | System status (model, memory stats) |
+| `/status` | System status (model, memory, voice stats) |
 | `/model gpt-4o` | Switch to GPT-4o (or back to gpt-4o-mini) |
 | `/search <query>` | Search past conversation memories |
+| `/voice on\|off` | Toggle voice input (speak to JARVIS via mic) |
+| `/speak on\|off` | Toggle voice output (JARVIS speaks back) |
+| `/speak local` | Use free offline TTS (default) |
+| `/speak premium` | Use OpenAI onyx voice (costs apply) |
+| `/vstatus` | Show voice system status |
 | `/clear` | Clear the terminal |
 | `/server` | Show server connection URL |
 | `/exit` | Disconnect |
+
+### Voice Commands
+
+Voice is **toggle-based** to keep costs under control.
+
+**Enable voice input (you speak to JARVIS):**
+```
+/voice on
+```
+Then press **Enter on an empty line** to start recording. Speak naturally, and JARVIS will stop listening after 1.5 seconds of silence.
+
+**Enable voice output (JARVIS speaks back):**
+```
+/speak on          # uses free local TTS (default)
+/speak premium     # uses OpenAI onyx voice (deep, JARVIS-like, costs money)
+/speak local       # switch back to free local TTS
+/speak off         # silence
+```
+
+**Full Iron Man mode (both):**
+```
+/voice on
+/speak on
+```
+Now press Enter, speak, and JARVIS replies both on screen and out loud.
+
+**Voice requires extra setup on the client machine (Mac or Windows):**
+```bash
+# In your client venv
+pip install sounddevice soundfile pyttsx3 numpy openai
+```
+
+For voice **input** (Whisper STT), you also need `OPENAI_API_KEY` set as an environment variable on the client machine:
+```bash
+# Mac
+export OPENAI_API_KEY=sk-your-key-here
+
+# Windows PowerShell
+$env:OPENAI_API_KEY = "sk-your-key-here"
+```
+
+**Voice cost estimates (with $5 budget):**
+| Feature | Cost |
+|---|---|
+| Local TTS (`/speak local`) | Free, runs offline |
+| Premium TTS (`/speak premium`) | ~₹1.25 per 5000 characters |
+| Voice input (`/voice on`) | ~₹0.50 per 10 minutes of speech |
+| Text chat (no voice) | Cheapest, ~₹70/month |
 
 ### Telegram Commands
 
@@ -444,6 +497,7 @@ Open Telegram, find your bot, and send `/start`. JARVIS should reply.
 ### What JARVIS Can Do
 
 - **Chat** — Technical Q&A, brainstorming, code review
+- **Voice** — Speak to JARVIS and hear responses (toggle-based, cost-controlled)
 - **Save files** — "Save these notes as meeting_notes.md"
 - **Read files** — "What's in that plan file we saved?"
 - **Run Python code** — "Calculate the compound interest on 50000 at 8% for 5 years"
@@ -631,8 +685,9 @@ JARVIS/
 │   │   └── telegram_bot.py   # Telegram handler
 │   └── data/                 # Runtime data (gitignored)
 │
-├── client/                   # Thin CLI (runs on Mac)
-│   ├── jarvis_cli.py         # Terminal chat interface
+├── client/                   # Thin CLI (runs on Mac or Windows)
+│   ├── jarvis_cli.py         # Terminal chat interface with voice support
+│   ├── voice.py              # Voice system (STT + TTS)
 │   └── config.py             # Server URL config (local IP or Cloudflare URL)
 │
 ├── scripts/

@@ -1,0 +1,32 @@
+{
+  "name": "Pranjal Singh",
+  "preferred_languages": [],
+  "active_projects": [
+    {
+      "name": "JARVIS",
+      "description": "Personal AI assistant with 3-tier memory, voice, CLI and Telegram interfaces",
+      "status": "active"
+    }
+  ],
+  "preferences": {
+    "communication_style": "Like JARVIS from Iron Man -- crisp, structured, slightly dry wit, technically precise",
+    "model_preference": "gpt-4o-mini",
+    "address_as": "Sir"
+  },
+  "facts": [
+    {
+      "fact": "Creator and operator of the JARVIS system",
+      "learned_on": "2026-10-11"
+    },
+    {
+      "fact": "Uses a company Mac for development and a personal Windows laptop as the JARVIS server",
+      "learned_on": "2026-10-11"
+    },
+    {
+      "fact": "Prefers to be addressed as 'Sir' in the style of the Iron Man JARVIS",
+      "learned_on": "2026-10-11"
+    }
+  ],
+  "skills": [],
+  "last_updated": "2026-10-11T00:00:00"
+}

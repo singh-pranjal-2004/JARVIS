@@ -26,3 +26,11 @@ rich==14.0.0
 
 # Utilities
 pydantic==2.11.3
+
+# Voice — Text-to-Speech (local, free)
+pyttsx3==2.98
+
+# Voice — Audio recording and playback
+sounddevice==0.5.1
+soundfile==0.13.1
+numpy>=1.22.5

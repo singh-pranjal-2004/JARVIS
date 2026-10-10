@@ -53,8 +53,20 @@ class SemanticMemory:
         return self._create_default()
 
     def _create_default(self) -> dict:
-        """Create and save a default profile."""
+        """Create and save a default profile. Uses the template if available."""
         self._path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Check for a pre-loaded template (stark_profile.default.json)
+        template_path = self._path.parent / "stark_profile.default.json"
+        if template_path.exists():
+            try:
+                with open(template_path, "r", encoding="utf-8") as f:
+                    profile = json.load(f)
+                self._save(profile)
+                return profile
+            except (json.JSONDecodeError, IOError):
+                pass
+
         self._save(DEFAULT_PROFILE)
         return DEFAULT_PROFILE.copy()
 
