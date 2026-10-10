@@ -1,12 +1,12 @@
 @echo off
 REM ============================================
-REM JARVIS — Quick Start Script for Windows
+REM JARVIS -- Quick Start Script for Windows
 REM Double-click this file or run from terminal
 REM ============================================
 
 echo.
 echo ========================================
-echo   J.A.R.V.I.S. — Starting Server...
+echo   J.A.R.V.I.S. -- Starting Server...
 echo ========================================
 echo.
 

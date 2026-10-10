@@ -1,9 +1,9 @@
 # ============================================
-# JARVIS — Cloudflare Tunnel Setup (One-Time)
+# JARVIS -- Cloudflare Tunnel Setup (One-Time)
 # Run this ONCE on your personal Windows laptop
 # ============================================
 #
-# This installs cloudflared — the tool that creates a
+# This installs cloudflared -- the tool that creates a
 # secure tunnel from your laptop to the internet.
 # After this, you can access JARVIS from anywhere.
 #
@@ -14,7 +14,7 @@
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "  Cloudflare Tunnel — Setup Script" -ForegroundColor Cyan
+Write-Host "  Cloudflare Tunnel -- Setup Script" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 

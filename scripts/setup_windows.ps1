@@ -1,5 +1,5 @@
 # ============================================
-# JARVIS — Windows Setup Script
+# JARVIS -- Windows Setup Script
 # Run this ONCE on your personal Windows laptop
 # ============================================
 # 
@@ -11,7 +11,7 @@
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "  J.A.R.V.I.S. — Windows Setup Script" -ForegroundColor Cyan
+Write-Host "  J.A.R.V.I.S. -- Windows Setup Script" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 

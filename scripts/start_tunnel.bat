@@ -1,6 +1,6 @@
 @echo off
 REM ============================================
-REM JARVIS — Start Cloudflare Tunnel
+REM JARVIS -- Start Cloudflare Tunnel
 REM Run this when you need remote access
 REM ============================================
 REM
@@ -16,7 +16,7 @@ REM ============================================
 
 echo.
 echo ========================================
-echo   JARVIS — Cloudflare Tunnel
+echo   JARVIS -- Cloudflare Tunnel
 echo ========================================
 echo.
 
