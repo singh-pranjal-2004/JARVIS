@@ -193,7 +193,7 @@ def main():
             f"\n[bold red]⚠ Cannot reach JARVIS server at {JARVIS_SERVER_URL}[/bold red]\n"
             f"[dim]Make sure the server is running on your personal laptop.\n"
             f"Check client/config.py for the correct server URL.\n"
-            f"If using Tailscale, ensure both machines are connected.[/dim]\n"
+            f"Run 'ipconfig' on Windows to verify the IP. Check firewall if ping works but curl doesn't.[/dim]\n"
         )
         sys.exit(1)
 

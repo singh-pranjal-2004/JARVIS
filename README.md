@@ -240,14 +240,22 @@ netsh advfirewall firewall add rule name="JARVIS Server" dir=in action=allow pro
 
 The CLI client is intentionally lightweight. No AI processing, no API keys — just sends text over HTTP.
 
-### Install Client Dependencies
+### Create a Virtual Environment and Install Dependencies
+
+macOS with Homebrew-managed Python blocks direct `pip install`. Use a venv:
 
 ```bash
 cd ~/Desktop/Personal/JARVIS
-
-# Only need two packages (no server deps required)
-pip3 install httpx rich
+python3 -m venv client_venv
+source client_venv/bin/activate
+pip install httpx rich
 ```
+
+> **Every time you open a new terminal** to use the CLI, you need to activate the venv first:
+> ```bash
+> cd ~/Desktop/Personal/JARVIS
+> source client_venv/bin/activate
+> ```
 
 ### Configure the Server URL
 
@@ -258,8 +266,10 @@ nano client/config.py
 Change `JARVIS_SERVER_URL` to your Windows laptop's local IP:
 
 ```python
-JARVIS_SERVER_URL = "http://192.168.1.42:8000"  # Your Windows local IP from ipconfig
+JARVIS_SERVER_URL = "http://192.168.x.x:8000"  # Your Windows local IP from ipconfig
 ```
+
+To find your Windows IP: open PowerShell on Windows and run `ipconfig`. Look for **"IPv4 Address"** under the Wi-Fi adapter.
 
 Save: `Ctrl+O`, Enter, `Ctrl+X`.
 
@@ -273,7 +283,7 @@ You should see:
 ```
 ╭────────────────────────────────────────────╮
 │ J.A.R.V.I.S. — CLI Terminal Interface      │
-│ Connecting to http://192.168.1.42:8000...  │
+│ Connecting to http://192.168.x.x:8000...   │
 ╰────────────────────────────────────────────╯
 ✓ Connected. Neural link established.
 Type /help for commands. Type /exit to disconnect.
