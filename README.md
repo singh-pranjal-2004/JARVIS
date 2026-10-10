@@ -3,12 +3,14 @@
 A personal AI assistant with a 3-tier memory system, tool execution, and multi-interface access (Terminal CLI + Telegram mobile). Built to run on your personal Windows laptop while you code and control it from anywhere.
 
 ```
-Company Mac (CLI) ──────┐
-                        ├──(Tailscale VPN)──> Personal Windows Laptop (JARVIS Server)
-Phone (Telegram) ───────┘                          │
-                                                   ├── OpenAI API (gpt-4o-mini / gpt-4o)
-                                                   ├── 3-Tier Memory (Short-term + ChromaDB + Profile)
-                                                   └── Tools (File ops, Code runner, System info)
+                              ┌──────────────────────────────────────┐
+Company Mac (CLI)             │  Personal Windows Laptop             │
+  At home ──(local WiFi)────>│                                      │
+  Away ────(Cloudflare)─────>│  JARVIS Server (FastAPI)             │
+                              │    ├── OpenAI API (gpt-4o-mini/4o)  │
+Phone (Telegram)              │    ├── 3-Tier Memory System         │
+  Anywhere ──(Telegram)──────>│    └── Tools (files, code, system)  │
+                              └──────────────────────────────────────┘
 ```
 
 ---
@@ -17,17 +19,18 @@ Phone (Telegram) ───────┘                          │
 
 1. [Architecture Overview](#architecture-overview)
 2. [Prerequisites](#prerequisites)
-3. [Step 1: Tailscale Setup (Network Bridge)](#step-1-tailscale-setup-network-bridge)
-4. [Step 2: Personal Windows Laptop Setup (Server)](#step-2-personal-windows-laptop-setup-server)
-5. [Step 3: OpenAI API Key Setup](#step-3-openai-api-key-setup)
-6. [Step 4: Start the Server](#step-4-start-the-server)
-7. [Step 5: Company Mac Setup (CLI Client)](#step-5-company-mac-setup-cli-client)
-8. [Step 6: Telegram Bot Setup (Mobile)](#step-6-telegram-bot-setup-mobile)
-9. [Usage Guide](#usage-guide)
-10. [Memory System Explained](#memory-system-explained)
-11. [API Reference](#api-reference)
-12. [Troubleshooting](#troubleshooting)
-13. [Cost Breakdown](#cost-breakdown)
+3. [Network Setup (How the Two Machines Connect)](#network-setup)
+4. [Step 1: Personal Windows Laptop Setup (Server)](#step-1-personal-windows-laptop-setup-server)
+5. [Step 2: OpenAI API Key Setup](#step-2-openai-api-key-setup)
+6. [Step 3: Start the Server](#step-3-start-the-server)
+7. [Step 4: Company Mac Setup (CLI Client)](#step-4-company-mac-setup-cli-client)
+8. [Step 5: Cloudflare Tunnel (Remote Access)](#step-5-cloudflare-tunnel-remote-access)
+9. [Step 6: Telegram Bot Setup (Mobile)](#step-6-telegram-bot-setup-mobile)
+10. [Usage Guide](#usage-guide)
+11. [Memory System Explained](#memory-system-explained)
+12. [API Reference](#api-reference)
+13. [Troubleshooting](#troubleshooting)
+14. [Cost Breakdown](#cost-breakdown)
 
 ---
 
@@ -37,10 +40,11 @@ Phone (Telegram) ───────┘                          │
 |---|---|---|
 | JARVIS Server | Personal Windows laptop | Brain, memory, tools, Telegram bot — everything |
 | CLI Client | Company Mac | Thin terminal chat — just sends HTTP, zero AI processing |
-| Telegram Bot | Your phone | Mobile interface — messages routed to server |
-| Tailscale VPN | Both machines | Encrypted tunnel so Mac can reach Windows securely |
+| Telegram Bot | Your phone | Mobile interface — works from anywhere, always |
+| Local WiFi | Both machines at home | Direct connection via local IP (192.168.x.x) |
+| Cloudflare Tunnel | Personal Windows only | Free public URL for remote access when away from home |
 
-**Why this split?** Your company Mac stays clean — no API keys, no AI processing, no IT flags. All the intelligence runs on your personal machine.
+**Why this split?** Your company Mac stays clean — no API keys, no AI processing, no VPN installs, no IT flags. All the intelligence runs on your personal machine. The Mac only sends text over HTTP.
 
 ---
 
@@ -54,60 +58,68 @@ Phone (Telegram) ───────┘                          │
 
 ---
 
-## Step 1: Tailscale Setup (Network Bridge)
+## Network Setup
 
-Tailscale creates an encrypted VPN mesh between your machines. Each device gets a stable IP (like `100.x.x.x`) that never changes — even across different WiFi networks.
+### How the Two Machines Connect
 
-### Why Tailscale?
+There are **two modes** depending on where you are:
 
-- **Free** for personal use (up to 100 devices)
-- **Zero config** — no port forwarding, no router settings
-- **Works everywhere** — same WiFi, different networks, even office → home
-- **Encrypted** — WireGuard protocol, enterprise-grade security
+### Mode 1: At Home (Same WiFi) — Default
 
-### Install on Personal Windows Laptop
+Both laptops are on the same WiFi network. Your Mac can reach your Windows laptop directly using its local IP address (like `192.168.1.42`). No extra software needed.
 
-1. Go to [tailscale.com/download/windows](https://tailscale.com/download/windows)
-2. Download and run the installer
-3. Sign in with your **GitHub account** (same one for both machines)
-4. After sign-in, Tailscale appears in your system tray (bottom-right)
-5. Open PowerShell and run:
-   ```powershell
-   tailscale ip
-   ```
-6. **Write down the IP** — it looks like `100.64.x.x` or `100.100.x.x`. This is your JARVIS server's permanent address.
-
-### Install on Company Mac
-
-1. Go to [tailscale.com/download/mac](https://tailscale.com/download/mac) or install from the Mac App Store
-2. Open the app and sign in with the **same GitHub account**
-3. Verify connection — open Terminal on Mac and run:
-   ```bash
-   # Replace with your Windows laptop's Tailscale IP
-   ping 100.64.x.x
-   ```
-   If you see replies, the tunnel is working.
-
-### Verify the Connection
-
-From your Mac terminal:
-```bash
-# Replace with your actual Tailscale IP from step 5
-curl http://100.64.x.x:8000/
 ```
-(This will fail for now — the server isn't running yet. But if it says "connection refused" instead of "timeout", Tailscale is working correctly.)
+Company Mac ──(WiFi)──> 192.168.1.42:8000 ──> JARVIS Server
+```
+
+**How to find your Windows laptop's local IP:**
+
+On your Windows laptop, open PowerShell and run:
+```powershell
+ipconfig
+```
+
+Look for the section that says **"Wireless LAN adapter Wi-Fi"** (or similar). Find the line:
+```
+IPv4 Address. . . . . . . . . : 192.168.1.42
+```
+
+That `192.168.1.x` number is what your Mac uses to reach it.
+
+> **Tip:** This IP can occasionally change when your router reboots. If the CLI suddenly can't connect, re-run `ipconfig` on Windows and update `client/config.py` on your Mac. You can also set a static IP in your router settings to prevent this.
+
+### Mode 2: Away from Home (Different Networks) — On Demand
+
+When your Mac is at the office or a cafe and your Windows laptop is at home, they can't see each other on the local network. For this, you use a **Cloudflare Tunnel** — a free tool that runs on your Windows laptop and creates a temporary public URL.
+
+```
+Company Mac ──(internet)──> https://xxx.trycloudflare.com ──> JARVIS Server
+```
+
+- **Nothing gets installed on the company Mac** — it's just a normal HTTPS URL
+- **No Cloudflare account needed** — the free `trycloudflare.com` quick tunnels work without signup
+- **cloudflared only runs on your personal Windows laptop**
+- Setup instructions in [Step 5](#step-5-cloudflare-tunnel-remote-access)
+
+### Telegram: Always Works
+
+Telegram uses a completely different mechanism. Your JARVIS server polls Telegram's cloud for new messages over the internet. Your phone sends messages to Telegram's servers, not directly to your laptop. So Telegram works from **anywhere** — home, office, mobile data — as long as your Windows laptop is on and the server is running.
+
+```
+Phone ──> Telegram Cloud ──> JARVIS polls and picks up messages
+```
 
 ---
 
-## Step 2: Personal Windows Laptop Setup (Server)
+## Step 1: Personal Windows Laptop Setup (Server)
 
 ### Clone the Repository
 
 Open PowerShell on your personal Windows laptop:
 
 ```powershell
-cd C:\Users\YourName\Desktop
-git clone https://github.com/YOUR_USERNAME/JARVIS.git
+cd $HOME\Desktop
+git clone https://github.com/singh-pranjal-2004/JARVIS.git
 cd JARVIS
 ```
 
@@ -139,7 +151,7 @@ copy .env.example .env
 
 ---
 
-## Step 3: OpenAI API Key Setup
+## Step 2: OpenAI API Key Setup
 
 ### Get Your API Key
 
@@ -178,14 +190,14 @@ Save and close.
 
 ---
 
-## Step 4: Start the Server
+## Step 3: Start the Server
 
 ### Option A: Double-click launcher
 Double-click `scripts/start_server.bat`
 
 ### Option B: Manual start
 ```powershell
-cd C:\Users\YourName\Desktop\JARVIS
+cd $HOME\Desktop\JARVIS
 .\venv\Scripts\Activate.ps1
 python -m server.main
 ```
@@ -214,31 +226,42 @@ curl http://localhost:8000/
 
 You should get a JSON response with JARVIS endpoint info.
 
+### Windows Firewall
+
+If your Mac can't connect later, allow port 8000 through the firewall. Open PowerShell **as Administrator**:
+
+```powershell
+netsh advfirewall firewall add rule name="JARVIS Server" dir=in action=allow protocol=tcp localport=8000
+```
+
 ---
 
-## Step 5: Company Mac Setup (CLI Client)
+## Step 4: Company Mac Setup (CLI Client)
 
-The CLI client is intentionally lightweight. You only need two dependencies.
+The CLI client is intentionally lightweight. No AI processing, no API keys — just sends text over HTTP.
 
-### Option A: Use from the cloned repo
+### Install Client Dependencies
 
 ```bash
-cd ~/Desktop
-git clone https://github.com/YOUR_USERNAME/JARVIS.git
-cd JARVIS
+cd ~/Desktop/Personal/JARVIS
 
-# Install only client dependencies (no server deps needed)
+# Only need two packages (no server deps required)
 pip3 install httpx rich
+```
 
-# Edit the server URL to point to your Windows laptop
+### Configure the Server URL
+
+```bash
 nano client/config.py
 ```
 
-Change `JARVIS_SERVER_URL` to your Tailscale IP:
+Change `JARVIS_SERVER_URL` to your Windows laptop's local IP:
 
 ```python
-JARVIS_SERVER_URL = "http://100.64.x.x:8000"  # Your Tailscale IP
+JARVIS_SERVER_URL = "http://192.168.1.42:8000"  # Your Windows local IP from ipconfig
 ```
+
+Save: `Ctrl+O`, Enter, `Ctrl+X`.
 
 ### Run the CLI
 
@@ -248,28 +271,65 @@ python3 -m client.jarvis_cli
 
 You should see:
 ```
-╭──────────────────────────────────────╮
-│ J.A.R.V.I.S. — CLI Terminal Interface│
-│ Connecting to http://100.64.x.x:8000│
-╰──────────────────────────────────────╯
+╭────────────────────────────────────────────╮
+│ J.A.R.V.I.S. — CLI Terminal Interface      │
+│ Connecting to http://192.168.1.42:8000...  │
+╰────────────────────────────────────────────╯
 ✓ Connected. Neural link established.
 Type /help for commands. Type /exit to disconnect.
 
 You: 
 ```
 
-### Option B: Minimal standalone (no repo clone needed)
+---
 
-If you don't want the full repo on your company Mac, just create these two files anywhere:
+## Step 5: Cloudflare Tunnel (Remote Access)
 
-**jarvis_cli_standalone.py** — copy `client/jarvis_cli.py` but hardcode the URL:
-```python
-# At the top, replace the import with:
-JARVIS_SERVER_URL = "http://100.64.x.x:8000"
-CLIENT_SOURCE = "cli"
+Only needed when you're **away from home** and want to reach JARVIS from your company Mac over the internet. Skip this for now if you're just getting started.
+
+### One-Time Setup (on Personal Windows Laptop)
+
+```powershell
+cd $HOME\Desktop\JARVIS
+.\scripts\setup_cloudflare.ps1
 ```
 
-Then run: `python3 jarvis_cli_standalone.py`
+This downloads `cloudflared.exe` (a single file, ~30MB) into the `tools/` folder. No Cloudflare account needed.
+
+### Starting a Tunnel
+
+Whenever you need remote access:
+
+1. Make sure JARVIS server is running first (`scripts/start_server.bat`)
+2. In a **separate** PowerShell window, run:
+   ```powershell
+   .\scripts\start_tunnel.bat
+   ```
+3. It prints output. Look for a line like:
+   ```
+   https://cabin-feelings-mercy-configured.trycloudflare.com
+   ```
+4. Copy that URL
+
+### Using the Tunnel from Your Mac
+
+Edit `client/config.py` on your Mac:
+
+```python
+# Comment out the local IP line and uncomment the Cloudflare line:
+# JARVIS_SERVER_URL = "http://192.168.1.42:8000"
+JARVIS_SERVER_URL = "https://cabin-feelings-mercy-configured.trycloudflare.com"
+```
+
+Then run the CLI normally: `python3 -m client.jarvis_cli`
+
+### Notes on Cloudflare Tunnel
+
+- **Free, no account needed** — uses `trycloudflare.com` quick tunnels
+- The URL **changes every time** you restart the tunnel. Copy the new one each time.
+- The tunnel runs alongside the server — keep both windows open
+- When you're done, press `Ctrl+C` in the tunnel window to stop it
+- **Switch back to local IP** when you get home for faster response
 
 ---
 
@@ -427,14 +487,15 @@ Response:
 
 ### "Cannot reach JARVIS server" from CLI
 
-1. **Is the server running?** Check your Windows laptop
-2. **Is Tailscale connected?** Check the system tray icon on both machines
-3. **Correct IP?** Run `tailscale ip` on Windows and update `client/config.py`
+1. **Is the server running?** Check the PowerShell window on your Windows laptop
+2. **Correct IP?** Re-run `ipconfig` on Windows and check the IP in `client/config.py`
+3. **Same WiFi?** Both machines must be on the same WiFi network for local IP mode
 4. **Firewall?** Windows Firewall might block port 8000:
    ```powershell
    # Run as Administrator on Windows
-   netsh advfirewall firewall add rule name="JARVIS" dir=in action=allow protocol=tcp localport=8000
+   netsh advfirewall firewall add rule name="JARVIS Server" dir=in action=allow protocol=tcp localport=8000
    ```
+5. **Using Cloudflare tunnel?** Make sure the tunnel is running and the URL in `client/config.py` matches the current tunnel URL
 
 ### "OPENAI_API_KEY not set"
 
@@ -466,6 +527,13 @@ rmdir /s /q server\data\chroma_db
 pip install -r requirements.txt
 ```
 
+### Cloudflare tunnel won't start
+
+- Make sure you ran `.\scripts\setup_cloudflare.ps1` first
+- Check that `tools\cloudflared.exe` exists
+- Make sure the JARVIS server is running before starting the tunnel
+- If download fails, manually download from [cloudflare/cloudflared releases](https://github.com/cloudflare/cloudflared/releases/latest) and save as `tools\cloudflared.exe`
+
 ---
 
 ## Cost Breakdown
@@ -477,7 +545,7 @@ pip install -r requirements.txt
 | Chat (casual daily use) | ~₹70 ($0.85) |
 | Embeddings (memory) | ~₹2 (negligible) |
 | Telegram | Free |
-| Tailscale | Free |
+| Cloudflare Tunnel | Free |
 | ChromaDB | Free (local) |
 | **Total** | **~₹70/month** |
 
@@ -521,11 +589,16 @@ JARVIS/
 │
 ├── client/                   # Thin CLI (runs on Mac)
 │   ├── jarvis_cli.py         # Terminal chat interface
-│   └── config.py             # Server URL config
+│   └── config.py             # Server URL config (local IP or Cloudflare URL)
 │
-└── scripts/
-    ├── setup_windows.ps1     # One-time Windows setup
-    └── start_server.bat      # Quick launcher
+├── scripts/
+│   ├── setup_windows.ps1     # One-time Windows setup
+│   ├── setup_cloudflare.ps1  # One-time Cloudflare tunnel setup
+│   ├── start_server.bat      # Quick server launcher
+│   └── start_tunnel.bat      # Quick tunnel launcher
+│
+└── tools/                    # Downloaded binaries (gitignored)
+    └── cloudflared.exe       # Created by setup_cloudflare.ps1
 ```
 
 ---
