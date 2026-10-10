@@ -270,27 +270,31 @@ class VoiceManager:
             print(f"[Voice] Local TTS error: {e}")
 
     def _speak_premium(self, text: str):
-        """Speak using OpenAI TTS API (paid, high quality)."""
+        """Speak using OpenAI TTS via the JARVIS server (routes through Windows)."""
         try:
+            import httpx as _httpx
+            from client.config import JARVIS_SERVER_URL
+
             # Truncate to avoid huge bills -- max 4096 chars per request
             if len(text) > 4096:
                 text = text[:4096]
 
-            response = self._openai.audio.speech.create(
-                model="tts-1",
-                voice="onyx",  # Deep male voice -- closest to JARVIS
-                input=text,
-                response_format="mp3"
+            api_url = JARVIS_SERVER_URL.rstrip("/") + "/api/voice/tts"
+            resp = _httpx.post(
+                api_url,
+                json={"text": text, "voice": "onyx"},
+                timeout=30.0
             )
+            resp.raise_for_status()
 
-            # Save to temp file and play
+            # Save audio and play
             temp_path = os.path.join(tempfile.gettempdir(), "jarvis_speak.mp3")
-            response.stream_to_file(temp_path)
+            with open(temp_path, "wb") as f:
+                f.write(resp.content)
 
-            # Play using sounddevice + soundfile
             data, samplerate = sf.read(temp_path)
             sd.play(data, samplerate)
-            sd.wait()  # Block until playback is done
+            sd.wait()
 
             try:
                 os.remove(temp_path)

@@ -127,3 +127,34 @@ async def full_status():
             "semantic_profile": bool(_brain.semantic.get_profile().get("name"))
         }
     }
+
+
+class TTSRequest(BaseModel):
+    text: str = Field(..., min_length=1, max_length=4096)
+    voice: str = Field(default="onyx")
+
+
+@router.post("/voice/tts")
+async def text_to_speech(request: TTSRequest):
+    """
+    Generate speech audio from text using OpenAI TTS.
+    Returns raw MP3 audio bytes.
+    Called by the CLI client for premium TTS (routes through server
+    so the Mac doesn't need direct OpenAI access).
+    """
+    if not _brain:
+        raise HTTPException(status_code=503, detail="Brain not initialized.")
+
+    from fastapi.responses import Response
+
+    try:
+        response = _brain._openai.audio.speech.create(
+            model="tts-1",
+            voice=request.voice,
+            input=request.text,
+            response_format="mp3"
+        )
+        audio_bytes = response.read()
+        return Response(content=audio_bytes, media_type="audio/mpeg")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"TTS error: {e}")
