@@ -5,15 +5,14 @@
 # AI Engine
 openai==1.82.0
 
-# Server
-fastapi==0.115.12
-uvicorn==0.34.2
+# 3-Tier Memory (pins its own fastapi/uvicorn/pydantic versions)
+chromadb==1.0.7
+
+# Server (versions compatible with chromadb)
+uvicorn==0.54.0
 
 # Telegram Bot
 python-telegram-bot==21.11
-
-# 3-Tier Memory
-chromadb==1.0.7
 
 # Environment & Config
 python-dotenv==1.1.0
@@ -21,6 +20,3 @@ python-dotenv==1.1.0
 # CLI Client (rich terminal output)
 httpx==0.28.1
 rich==14.0.0
-
-# Utilities
-pydantic==2.11.3
