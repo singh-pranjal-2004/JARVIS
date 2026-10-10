@@ -1,0 +1,40 @@
+# Environment & Secrets
+.env
+*.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# JARVIS Runtime Data (generated on personal laptop)
+server/data/chroma_db/
+server/data/stark_profile.json
+server/data/conversation_logs/
+server/data/jarvis_workspace/
+temp_jarvis_run.py
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
