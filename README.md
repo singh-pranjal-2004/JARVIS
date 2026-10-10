@@ -17,6 +17,7 @@ Phone (Telegram)              │    ├── 3-Tier Memory System         │
 
 ## 📋 Table of Contents
 
+0. [Quick Start (Daily Use)](#quick-start-daily-use)
 1. [Architecture Overview](#architecture-overview)
 2. [Prerequisites](#prerequisites)
 3. [Network Setup (How the Two Machines Connect)](#network-setup)
@@ -31,6 +32,39 @@ Phone (Telegram)              │    ├── 3-Tier Memory System         │
 12. [API Reference](#api-reference)
 13. [Troubleshooting](#troubleshooting)
 14. [Cost Breakdown](#cost-breakdown)
+
+---
+
+## Quick Start (Daily Use)
+
+Already set up? These are the only commands you need every day.
+
+### Windows (Personal Laptop) — Start the Server
+
+```powershell
+cd $HOME\Desktop\JARVIS
+.\venv\Scripts\Activate.ps1
+python -m server.main
+```
+
+Or just double-click `scripts\start_server.bat`. Leave the window open.
+
+### Mac (Company Laptop) — Connect the CLI
+
+```bash
+cd ~/Desktop/Personal/JARVIS
+source client_venv/bin/activate
+python3 -m client.jarvis_cli
+```
+
+### Phone — Nothing to Start
+
+Open Telegram and message `@prsingh_jarvis_bot`. Works as long as the Windows server is running.
+
+### Shutting Down
+
+- **Windows:** `Ctrl+C` in the server window
+- **Mac:** type `/exit` in the CLI, or `Ctrl+C`
 
 ---
 
