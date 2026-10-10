@@ -87,15 +87,13 @@ class VoiceManager:
         if PYTTSX3_AVAILABLE:
             try:
                 self._local_tts = pyttsx3.init()
-                # Configure voice -- slower rate, deeper pitch for JARVIS feel
-                self._local_tts.setProperty("rate", 170)  # Default ~200, slower = more deliberate
+                # Configure voice -- slower rate for JARVIS feel
+                self._local_tts.setProperty("rate", 170)
                 self._local_tts.setProperty("volume", 0.9)
-                # Try to pick a male voice
-                voices = self._local_tts.getProperty("voices")
-                for v in voices:
-                    if "male" in v.name.lower() or "david" in v.name.lower() or "alex" in v.name.lower():
-                        self._local_tts.setProperty("voice", v.id)
-                        break
+                # Pick a male voice (names differ by OS)
+                self._male_voice_id = self._find_male_voice(self._local_tts)
+                if self._male_voice_id:
+                    self._local_tts.setProperty("voice", self._male_voice_id)
             except Exception:
                 self._local_tts = None
 
@@ -262,11 +260,9 @@ class VoiceManager:
             engine.setProperty("rate", 170)
             engine.setProperty("volume", 0.9)
             # Pick male voice
-            voices = engine.getProperty("voices")
-            for v in voices:
-                if "male" in v.name.lower() or "david" in v.name.lower() or "alex" in v.name.lower():
-                    engine.setProperty("voice", v.id)
-                    break
+            male_id = self._find_male_voice(engine)
+            if male_id:
+                engine.setProperty("voice", male_id)
             engine.say(text)
             engine.runAndWait()
             engine.stop()
@@ -307,6 +303,44 @@ class VoiceManager:
     # ------------------------------------------------------------------
     # Utilities
     # ------------------------------------------------------------------
+
+    @staticmethod
+    def _find_male_voice(engine) -> Optional[str]:
+        """
+        Find a male voice ID from the available system voices.
+        
+        macOS voices: Daniel (British), Alex (US), Tom (US), Rishi (Indian English)
+        Windows voices: David (US), Mark (US), George (British)
+        Linux voices: usually only one default
+        """
+        voices = engine.getProperty("voices")
+        
+        # Preferred male voices in order (JARVIS-like)
+        # Daniel = British male (closest to JARVIS), then others
+        preferred = ["daniel", "tom", "alex", "rishi", "david", "mark", "george"]
+        
+        # First pass: match preferred names
+        for pref in preferred:
+            for v in voices:
+                if pref in v.name.lower():
+                    return v.id
+        
+        # Second pass: look for any male indicator
+        for v in voices:
+            name_lower = v.name.lower()
+            # Some systems have gender in the voice ID or name
+            if "male" in name_lower and "female" not in name_lower:
+                return v.id
+        
+        # Third pass: check voice ID for common male voice patterns
+        for v in voices:
+            vid = v.id.lower() if v.id else ""
+            for pref in preferred:
+                if pref in vid:
+                    return v.id
+        
+        # Give up, return None (will use system default)
+        return None
 
     @staticmethod
     def _clean_for_speech(text: str) -> str:
