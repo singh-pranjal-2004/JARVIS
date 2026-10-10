@@ -20,7 +20,7 @@ TWO MODES:
 # ============================================
 
 # At home (same WiFi) — use local IP:
-JARVIS_SERVER_URL = "http://192.168.1.42:8000"
+JARVIS_SERVER_URL = "http://192.168.0.238:8000"
 
 # Away from home — switch to your Cloudflare tunnel URL:
 # JARVIS_SERVER_URL = "https://your-tunnel-url.trycloudflare.com"
