@@ -5,14 +5,17 @@
 # AI Engine
 openai==1.82.0
 
-# 3-Tier Memory (pins its own fastapi/uvicorn/pydantic versions)
-chromadb==1.0.7
-
-# Server (versions compatible with chromadb)
-uvicorn==0.54.0
+# Server
+fastapi>=0.115.0,<1.0.0
+uvicorn==0.34.2
 
 # Telegram Bot
 python-telegram-bot==21.11
+
+# 3-Tier Memory
+# NOTE: chromadb 1.5+ bundles hnswlib inside its own wheel (cp39-abi3)
+# so it works on Python 3.9-3.13 on Windows without C++ build tools.
+chromadb>=1.5.0,<2.0.0
 
 # Environment & Config
 python-dotenv==1.1.0
@@ -20,3 +23,6 @@ python-dotenv==1.1.0
 # CLI Client (rich terminal output)
 httpx==0.28.1
 rich==14.0.0
+
+# Utilities
+pydantic==2.11.3
